@@ -1,0 +1,144 @@
+﻿<Window x:Class="LC_Portfolio.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:LC_Portfolio"
+        mc:Ignorable="d"
+        Title="Staffan Leandersson Demo Application"
+        WindowStyle="None"
+        WindowState="Maximized"
+        ResizeMode="CanResize">
+    <Window.Background>
+         <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#FFF0F0F0" Offset="0"/>
+            <GradientStop Color="#FFB0B0B0" Offset="1"/>
+        </LinearGradientBrush>
+    </Window.Background>
+    <Window.Resources>
+        <!-- Button style with rounded corners -->
+        <Style x:Key="RoundedButton" TargetType="Button">
+            <Setter Property="Background" Value="#79A9B1"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#75ACAF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="Margin" Value="10"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="3" ShadowDepth="2" Opacity="0.3"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="10"
+                        Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                      
+                                      TextElement.Foreground="{TemplateBinding Foreground}"
+                                      TextElement.FontSize="{TemplateBinding FontSize}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="CloseButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="30"/>
+            <Setter Property="Background" Value="#E52B2B"/>
+            <Setter Property="Foreground" Value="white"/>
+            <!--<Setter Property="Height" Value="23"/>-->
+            <Setter Property="FontSize" Value="21"/>
+            <!-- Add more Setters as needed -->
+        </Style>
+
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <!-- Top bar -->
+            <RowDefinition Height="*"/>
+            <!-- Main content area -->
+            <RowDefinition Height="Auto"/>
+            <!-- Status bar -->
+        </Grid.RowDefinitions>
+        
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" MinWidth="100"/>
+            <ColumnDefinition Width="Auto" MinWidth="100"/>
+            <ColumnDefinition Width="5*" MinWidth="100"/>
+            <ColumnDefinition Width="5*" MinWidth="100"/>
+            <ColumnDefinition Width="5*"/>
+            <ColumnDefinition Width="5*"/>
+            <ColumnDefinition Width="5*"/>
+            <!-- Additional ColumnDefinitions omitted for brevity -->
+        </Grid.ColumnDefinitions>
+
+        <!-- Top Bar Grid -->
+        <Grid Grid.Row="0" Grid.ColumnSpan="7">
+            <Grid.ColumnDefinitions>
+                <!-- Three equal columns for settings button, weather info, and close button -->
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="1*"/>
+            </Grid.ColumnDefinitions>
+            <!-- Custom Top Bar with Closing "X" Button -->
+            <DockPanel Grid.Row="0" Grid.ColumnSpan="3" Background="#EEE">
+                <DockPanel Grid.Row="0" Grid.ColumnSpan="2" Background="#EEE">
+                    <Button DockPanel.Dock="Left" Margin="15,0,30,0">
+                        <Button.Content>
+                            <Path Data="M10,20 L10,14 L14,14 L14,20 M5,20 V10.5 L12,4 L19,10.5 V20 H5 Z"
+                  Fill="Black"
+                  Width="24" Height="24"
+                  Stretch="Fill"/>
+                        </Button.Content>
+                    </Button>
+                    <!-- Settings TextBlock on the left -->
+                    <Button Content="Settings" DockPanel.Dock="Left"/>
+                    <!-- Weather Information in the center -->
+                    <TextBlock x:Name="WeatherInfoTextBlock" Grid.Column="1" Padding="50,0,50,0" HorizontalAlignment="Right" Text="Weather info loading..." />
+                    <!-- Closing "X" Button -->
+                    <Button Content="X" Grid.Column="2" Style="{StaticResource CloseButtonStyle}" HorizontalAlignment="Right" Click="CloseButton_Click" Margin="0"/>
+                </DockPanel>
+            </DockPanel>
+        </Grid>
+
+        <!-- Using a StackPanel for the menu buttons with the RoundedButton style -->
+        <StackPanel Grid.Row="1" Grid.Column="0" VerticalAlignment="Center">
+            <Button Content="Menu 1" Style="{StaticResource RoundedButton}" Click="Menu1_Click"/>
+            <Button Content="Menu 2" Style="{StaticResource RoundedButton}" Click="Menu2_Click"/>
+            <Button Content="Menu 3" Style="{StaticResource RoundedButton}"/>
+            <Button Content="Menu 4" Style="{StaticResource RoundedButton}"/>
+            <Button Content="Menu 5" Style="{StaticResource RoundedButton}"/>
+            <Button Content="Menu 6" Style="{StaticResource RoundedButton}"/>
+            <Button Content="Menu 7" Style="{StaticResource RoundedButton}"/>
+            <Button Content="Menu 8" Style="{StaticResource RoundedButton}"/>
+        </StackPanel>
+
+        <!-- Border with rounded corners wrapping the Frame -->
+        <Border Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="7" CornerRadius="15" BorderThickness="2" BorderBrush="Black" Padding="0">
+            <Frame Name="MainFrame" NavigationUIVisibility="Hidden"
+               HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+               ContentRendered="MainFrame_ContentRendered"/>
+        </Border>
+
+        <!-- Status Bar -->
+        <StatusBar Grid.Row="2" Grid.ColumnSpan="2">
+            <!-- Status items can be added here -->
+            <StatusBarItem Background="#FFB0B0B0">
+                <TextBlock x:Name="IpInfoTextBlock" Background="#FFB0B0B0" Text="IP info loading..." />
+            </StatusBarItem>
+            <!-- Additional status information can be added as needed -->
+        </StatusBar>
+    </Grid>
+</Window>
