@@ -16,6 +16,7 @@ namespace LC_Portfolio.Database
     {
         public ICommand ImportCsvCommand { get; }
         public ICommand SaveDatabaseCommand { get; }
+        public ICommand ConnectToDatabaseCommand { get; }
 
         private DataTable _dataTable = new DataTable();
         public DataView DataView => _dataTable.DefaultView;
@@ -34,8 +35,8 @@ namespace LC_Portfolio.Database
         {
             ImportCsvCommand = new RelayCommand(async () => await ImportCsv());
             SaveDatabaseCommand = new RelayCommand(async () => await SaveDatabase(), CanSaveDatabase);
-            //ImportCsvCommand = new RelayCommand();
-            //SaveDatabaseCommand = new RelayCommand(, CanSaveDatabase);
+            ConnectToDatabaseCommand = new RelayCommand(ConnectToDatabase);
+            _dataTable = new DataTable();
         }
 
         private async Task ImportCsv()
@@ -127,6 +128,77 @@ namespace LC_Portfolio.Database
                 }
             }
             MessageBox.Show($"Database saved successfully to {filePath}.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        private async void ConnectToDatabase()
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Filter = "SQLite database (*.db)|*.db",
+                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                string dbFilePath = openFileDialog.FileName;
+                // Now you have the path to the .db file, you can establish a connection
+                // For demonstration, let's just show the path in a MessageBox
+                MessageBox.Show($"Connecting to database at: {dbFilePath}", "Database Connection", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                // Example connection (You might want to store this connection and use it later)
+                string connectionString = $"Data Source={dbFilePath};";
+                using (var connection = new SqliteConnection(connectionString))
+                {
+                    try
+                    {
+                        connection.Open();
+                        // Perform database operations here
+                        await LoadDataFromDatabase(dbFilePath);
+                        MessageBox.Show("Connected successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Failed to connect: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+            }
+        }
+        private async Task LoadDataFromDatabase(string dbFilePath)
+        {
+            DataTable dbDataTable = new DataTable();
+
+            using (var connection = new SqliteConnection($"Data Source={dbFilePath}"))
+            {
+                await connection.OpenAsync();
+
+                // Here you can dynamically get the table name if needed
+                string tableName = await GetFirstTableNameAsync(connection);
+
+                string query = $"SELECT * FROM {tableName};";
+                using (var command = new SqliteCommand(query, connection))
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    dbDataTable.Load(reader);
+                }
+            }
+            _dataTable = dbDataTable;
+            OnPropertyChanged(nameof(DataView));
+            DataGridVisibility = Visibility.Visible; // Make sure DataGrid is visible to show the loaded data
+        }
+
+        private async Task<string> GetFirstTableNameAsync(SqliteConnection connection)
+        {
+            string tableName = null;
+            // Query to get the first table name
+            string query = "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;";
+            using (var command = new SqliteCommand(query, connection))
+            using (var reader = await command.ExecuteReaderAsync())
+            {
+                if (await reader.ReadAsync())
+                {
+                    tableName = reader.GetString(0);
+                }
+            }
+            return tableName;
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
