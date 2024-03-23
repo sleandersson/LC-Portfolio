@@ -101,8 +101,8 @@
                     </Grid.ColumnDefinitions>
                     
                     <!-- Populate other cells as needed -->
-                    <Button Grid.Row="1" Style="{StaticResource RoundedButton}" Content="Create Database" Command="{Binding ImportCsvCommand}" Margin="0,5,0,0" Padding="3,3,3,3"/>
-                    <Button Grid.Row="2" Style="{StaticResource RoundedButton}" Content="Set Connection" Margin="0,5,0,0" Padding="3,3,3,3"/>
+                    <Button Grid.Row="1" Style="{StaticResource RoundedButton}" Content="Load a .csv" Command="{Binding ImportCsvCommand}" Margin="0,5,0,0" Padding="3,3,3,3"/>
+                    <Button Grid.Row="2" Style="{StaticResource RoundedButton}" Content="Connect to a .db" Margin="0,5,0,0" Padding="3,3,3,3"/>
                     <Button Grid.Row="3" Style="{StaticResource RoundedButton}" Content="Save Database" Command="{Binding SaveDatabaseCommand}"  Margin="0,5,0,0" Padding="3,3,3,3" />
                     <Button Grid.Row="4" Style="{StaticResource RoundedButton}" Content="Test Connection" Margin="0,5,0,0" Padding="3,3,3,3"/>
                     <Button Grid.Row="11" Style="{StaticResource RoundedButton}" Content="Add record" Margin="0,5,0,0" Padding="3,3,3,3"/>

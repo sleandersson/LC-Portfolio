@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Data;
 using System.IO;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace LC_Portfolio.Database
@@ -31,11 +32,13 @@ namespace LC_Portfolio.Database
         }
         public Menu1ViewModel()
         {
-            ImportCsvCommand = new RelayCommand(ImportCsv);
-            SaveDatabaseCommand = new RelayCommand(SaveDatabase, CanSaveDatabase);
+            ImportCsvCommand = new RelayCommand(async () => await ImportCsv());
+            SaveDatabaseCommand = new RelayCommand(async () => await SaveDatabase(), CanSaveDatabase);
+            //ImportCsvCommand = new RelayCommand();
+            //SaveDatabaseCommand = new RelayCommand(, CanSaveDatabase);
         }
 
-        private void ImportCsv()
+        private async Task ImportCsv()
         {
             OpenFileDialog openFileDialog = new OpenFileDialog
             {
@@ -45,44 +48,50 @@ namespace LC_Portfolio.Database
 
             if (openFileDialog.ShowDialog() == true)
             {
-                LoadCsvIntoDataTable(openFileDialog.FileName);
-                DataGridVisibility = Visibility.Visible;
-            }
-        }
-        private void LoadCsvIntoDataTable(string csvFilePath)
-        {
-            _dataTable.Clear();
-            _dataTable.Columns.Clear();
-
-            using (var parser = new TextFieldParser(csvFilePath))
-            {
-                parser.TextFieldType = FieldType.Delimited;
-                parser.SetDelimiters(",");
-                bool isFirstRow = true;
-                while (!parser.EndOfData)
+                await LoadCsvIntoDataTable(openFileDialog.FileName);
+                if (DataGridVisibility != Visibility.Visible)
                 {
-                    string[] fields = parser.ReadFields();
-                    if (isFirstRow)
-                    {
-                        foreach (string header in fields)
-                        {
-                            _dataTable.Columns.Add(SanitizeColumnName(header));
-                        }
-                        isFirstRow = false;
-                    }
-                    else
-                    {
-                        _dataTable.Rows.Add(fields);
-                    }
+                    DataGridVisibility = Visibility.Visible;
                 }
             }
+        }
+        private async Task LoadCsvIntoDataTable(string csvFilePath)
+        {
+            DataTable newDataTable = new DataTable();
+            
+            await Task.Run(() =>
+            {
+                using (var parser = new TextFieldParser(csvFilePath))
+                {
+                    parser.TextFieldType = FieldType.Delimited;
+                    parser.SetDelimiters(",");
+                    bool isFirstRow = true;
+                    while (!parser.EndOfData)
+                    {
+                        string[] fields = parser.ReadFields();
+                        if (isFirstRow)
+                        {
+                            foreach (string header in fields)
+                            {
+                                newDataTable.Columns.Add(SanitizeColumnName(header));
+                            }
+                            isFirstRow = false;
+                        }
+                        else
+                        {
+                            newDataTable.Rows.Add(fields);
+                        }
+                    }
+                }
+                });
+            _dataTable = newDataTable;
             OnPropertyChanged(nameof(DataView));
         }
 
         private string SanitizeColumnName(string columnName) =>
             columnName.Replace(" ", "").Replace(".", "").Replace("-", "").Replace("%", "");
 
-        private void SaveDatabase()
+        private async Task SaveDatabase()
         {
             SaveFileDialog saveFileDialog = new SaveFileDialog
             {
@@ -96,7 +105,7 @@ namespace LC_Portfolio.Database
             }
         }
 
-        private bool CanSaveDatabase() => _dataTable?.Rows.Count > 0;
+        private bool CanSaveDatabase() => _dataTable != null && _dataTable.Rows.Count > 0;
 
         private void SaveDataTableToDatabase(string filePath)
         {
