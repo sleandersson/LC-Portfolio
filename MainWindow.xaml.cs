@@ -20,6 +20,7 @@ namespace LC_Portfolio
         {
             InitializeComponent();
             InitializeDataAsync().ConfigureAwait(false); // Ensures not to block the UI thread.
+            SetGreetingMessage();
         }
 
         private async Task InitializeDataAsync()
@@ -63,7 +64,7 @@ namespace LC_Portfolio
                         var response = await client.GetAsync(ipInfoUrl);
                         response.EnsureSuccessStatusCode();
                         string responseBody = await response.Content.ReadAsStringAsync();
-                        dynamic ipInfo = JsonConvert.DeserializeObject(responseBody);
+                        dynamic ?ipInfo = JsonConvert.DeserializeObject(responseBody);
 
                         string location = $"{ipInfo.city}, {ipInfo.country}";
                         Dispatcher.Invoke(() => IpInfoTextBlock.Text = $"IP: {ipInfo.ip}, Location: {location}");
@@ -95,35 +96,57 @@ namespace LC_Portfolio
                 response.EnsureSuccessStatusCode();
 
                 string responseBody = await response.Content.ReadAsStringAsync();
-                dynamic weatherData = JsonConvert.DeserializeObject(responseBody);
+                dynamic ?weatherData = JsonConvert.DeserializeObject(responseBody);
 
                 return $"Weather in: {location}, {weatherData.weather[0].main}, {weatherData.main.temp}°C";
             }
         }
 
-
         private void MainFrame_ContentRendered(object sender, EventArgs e)
-            {
-                // Your code here to execute after the Frame's content is rendered
-            }
+        {
+            // Your code here to execute after the Frame's content is rendered
+        }
 
-            private void CloseButton_Click(object sender, RoutedEventArgs e)
-            {
-                // Close the window
-                this.Close();
-            }
+        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Close the window
+            this.Close();
+        }
 
-            private void Menu1_Click(object sender, RoutedEventArgs e)
-            {
-                MainFrame.Navigate(new Menu1Page());
-            }
+        private void Menu1_Click(object sender, RoutedEventArgs e)
+        {
+            MainFrame.Navigate(new Menu1Page());
+        }
 
-            private void Menu2_Click(object sender, RoutedEventArgs e)
-            {
-                MainFrame.Navigate(new Menu2Page()); // Assume you have a Menu2Page defined
-            }
+        private void Menu2_Click(object sender, RoutedEventArgs e)
+        {
+            MainFrame.Navigate(new Menu2Page()); // Assume you have a Menu2Page defined
+        }
 
-            //Add more click event handlers for other buttons...
-        
+        //Add more click event handlers for other buttons...
+        private void SetGreetingMessage()
+        {
+            string username = Environment.UserName;
+            string greeting = GetGreetingBasedOnTimeOfDay();
+            GreetingTextBlock.Text = $"{greeting}, {username}";
+        }
+
+        private string GetGreetingBasedOnTimeOfDay()
+        {
+            var hour = DateTime.Now.Hour;
+            if (hour < 12)
+            {
+                return "Good Morning";
+            }
+            else if (hour < 18)
+            {
+                return "Good Afternoon";
+            }
+            else
+            {
+                return "Good Evening";
+            }
+        }
+
     }
 }

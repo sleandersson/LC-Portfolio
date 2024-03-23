@@ -1,11 +1,6 @@
 ﻿using Microsoft.Data.Sqlite;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Data;
-
 
 namespace LC_Portfolio.Database
 {
@@ -31,8 +26,7 @@ namespace LC_Portfolio.Database
                 }
                 connection.Dispose();
             }
-            openConnections.Clear(); // Clear the list after closing all connections
+            openConnections.Clear(); // Clears the list after closing all connections
         }
     }
-
 }

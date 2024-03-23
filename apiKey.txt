@@ -1,2 +1,0 @@
-weatherApiKey=4210a4b4133ec09b4ecbc2628f2d5dfd
-ipinfoToken=affcd0b80b98b9

@@ -13,7 +13,6 @@
     <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="8.0.3" />
     <PackageReference Include="MvvmLightLibs" Version="5.4.1.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="RavenDB.Database" Version="3.5.9" />
     <PackageReference Include="SQLite" Version="3.13.0" />
     <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.8" />
     <PackageReference Include="SQLitePCLRaw.core" Version="2.1.8" />

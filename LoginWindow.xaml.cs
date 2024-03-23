@@ -17,7 +17,7 @@ namespace LC_Portfolio
             string password = PasswordBox.Password;
 
             // Temporary check against a hardcoded username and password
-            if (username == "user" && password == "password")
+            if (username == "user" && password == "")
             {
                 // MessageBox.Show("Login successful.");
 

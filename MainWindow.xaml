@@ -112,10 +112,11 @@
                 </DockPanel>
             </DockPanel>
         </Grid>
-
+        
         <!-- Using a StackPanel for the menu buttons with the RoundedButton style -->
         <StackPanel Grid.Row="1" Grid.Column="0" VerticalAlignment="Center">
-            <Button Content="Menu 1" Style="{StaticResource RoundedButton}" Click="Menu1_Click"/>
+            <TextBlock x:Name="GreetingTextBlock" FontSize="20" Margin="10"/>
+            <Button Content="Database CRUD" Style="{StaticResource RoundedButton}" Click="Menu1_Click"/>
             <Button Content="Menu 2" Style="{StaticResource RoundedButton}" Click="Menu2_Click"/>
             <Button Content="Menu 3" Style="{StaticResource RoundedButton}"/>
             <Button Content="Menu 4" Style="{StaticResource RoundedButton}"/>

@@ -3,12 +3,9 @@ using Microsoft.Data.Sqlite;
 using Microsoft.VisualBasic.FileIO;
 using Microsoft.Win32;
 using System;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data;
 using System.IO;
-using System.Linq;
-using System.Net.NetworkInformation;
 using System.Windows;
 using System.Windows.Input;
 
@@ -16,30 +13,29 @@ namespace LC_Portfolio.Database
 {
     public class Menu1ViewModel : INotifyPropertyChanged
     {
-        public ICommand CreateDatabaseFromCsvCommand { get; private set; }
-        public ICommand ViewTableCommand { get; private set; }
-        private ObservableCollection<User> _users = new ObservableCollection<User>();
-        private DataTable dataTable;
+        public ICommand ImportCsvCommand { get; }
+        public ICommand SaveDatabaseCommand { get; }
 
-        public ObservableCollection<User> Users
+        private DataTable _dataTable = new DataTable();
+        public DataView DataView => _dataTable.DefaultView;
+
+        private Visibility _dataGridVisibility = Visibility.Collapsed;
+        public Visibility DataGridVisibility
         {
-            get => _users;
+            get => _dataGridVisibility;
             set
             {
-                _users = value;
-                OnPropertyChanged(nameof(Users));
+                _dataGridVisibility = value;
+                OnPropertyChanged(nameof(DataGridVisibility));
             }
         }
-
-        public DataView DataView => dataTable?.DefaultView;
-
         public Menu1ViewModel()
         {
-            CreateDatabaseFromCsvCommand = new RelayCommand(() => ImportCsvAndCreateDatabase());
-            ViewTableCommand = new RelayCommand(ViewTable);
+            ImportCsvCommand = new RelayCommand(ImportCsv);
+            SaveDatabaseCommand = new RelayCommand(SaveDatabase, CanSaveDatabase);
         }
 
-        private void ImportCsvAndCreateDatabase()
+        private void ImportCsv()
         {
             OpenFileDialog openFileDialog = new OpenFileDialog
             {
@@ -49,102 +45,83 @@ namespace LC_Portfolio.Database
 
             if (openFileDialog.ShowDialog() == true)
             {
-                string csvFilePath = openFileDialog.FileName;
-                // Ensure any existing connections to the database are closed
-                DatabaseConnectionManager.CloseAllConnections(); // Implement this based on your application's design
-
-                // Now, safely delete the existing database (if it exists) and create a new one
-                ProcessCsvFileAndCreateDatabase(csvFilePath);
+                LoadCsvIntoDataTable(openFileDialog.FileName);
+                DataGridVisibility = Visibility.Visible;
             }
         }
-
-        private void ProcessCsvFileAndCreateDatabase(string csvFilePath)
+        private void LoadCsvIntoDataTable(string csvFilePath)
         {
-            // Determine the path for appDatabase.db in the /bin directory
-            string databasePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appDatabase.db");
+            _dataTable.Clear();
+            _dataTable.Columns.Clear();
 
-            // Check if appDatabase.db exists and delete it to overwrite
-            if (File.Exists(databasePath))
+            using (var parser = new TextFieldParser(csvFilePath))
             {
-                // Before overwriting the database file
-                DatabaseConnectionManager.CloseAllConnections();
-
-                // Safe to delete or overwrite the database file now
-                File.Delete(databasePath);
-            }
-
-            // Create the SQLite database and table structure based on the CSV file
-            using (var connection = DatabaseConnectionManager.OpenConnection($"Data Source={databasePath}"))
-            {
-                connection.Open();
-                using (var parser = new TextFieldParser(csvFilePath))
+                parser.TextFieldType = FieldType.Delimited;
+                parser.SetDelimiters(",");
+                bool isFirstRow = true;
+                while (!parser.EndOfData)
                 {
-                    parser.TextFieldType = FieldType.Delimited;
-                    parser.SetDelimiters(",");
-                    if (!parser.EndOfData)
+                    string[] fields = parser.ReadFields();
+                    if (isFirstRow)
                     {
-                        // Assuming the first row contains headers
-                        string[] headers = parser.ReadFields();
-                        string columnsDefinition = string.Join(", ", headers.Select(header => $"[{header}] TEXT"));
-                        var createTableCommand = connection.CreateCommand();
-                        createTableCommand.CommandText = $"CREATE TABLE IF NOT EXISTS Data ({columnsDefinition});";
-                        createTableCommand.ExecuteNonQuery();
-
-                        // Insert data from CSV into the table
-                        while (!parser.EndOfData)
+                        foreach (string header in fields)
                         {
-                            string[] fields = parser.ReadFields();
-                            //string insertColumns = string.Join(", ", headers.Select(header => $"[{header}]"));
-                            //string insertValues = string.Join(", ", fields.Select(field => $"@{field}"));
-                            var insertCommand = connection.CreateCommand();
-                            // Create parameter placeholders
-                            string[] paramPlaceholders = new string[headers.Length];
-                            for (int i = 0; i < headers.Length; i++)
-                            {
-                                string paramName = $"@param{i}";
-                                paramPlaceholders[i] = paramName;
-                                insertCommand.Parameters.AddWithValue(paramName, fields[i]);
-                            }
-
-                            string insertColumns = string.Join(", ", headers.Select(header => $"[{header}]"));
-                            string insertValues = string.Join(", ", paramPlaceholders);
-
-                            insertCommand.CommandText = $"INSERT INTO Data ({insertColumns}) VALUES ({insertValues});";
-                            insertCommand.ExecuteNonQuery();
+                            _dataTable.Columns.Add(SanitizeColumnName(header));
                         }
+                        isFirstRow = false;
                     }
-                }
-                MessageBox.Show("Database created from CSV successfully.");
-            }
-        }
-
-        private void ViewTable()
-        {
-            // Assuming databasePath is accessible
-            string basePath = AppDomain.CurrentDomain.BaseDirectory; // Gets the base directory of the app
-            string databasePath = Path.Combine(basePath); // Combines with the relative path
-            Directory.CreateDirectory(Path.GetDirectoryName(databasePath)); // Ensures directory exists
-            LoadDataIntoDataTable(databasePath);
-        }
-
-        private void LoadDataIntoDataTable(string databasePath)
-        {
-            dataTable = new DataTable();
-            string fullPathToDatabase = Path.Combine(databasePath, "AppDatabase.db");
-            using (var connection = DatabaseConnectionManager.OpenConnection($"Data Source={fullPathToDatabase}"))
-            {
-                connection.Open();
-                var query = "SELECT * FROM Data";
-                using (var command = new SqliteCommand(query, connection))
-                using (var reader = command.ExecuteReader())
-                {
-                    dataTable.Load(reader);
+                    else
+                    {
+                        _dataTable.Rows.Add(fields);
+                    }
                 }
             }
             OnPropertyChanged(nameof(DataView));
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected virtual void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        private string SanitizeColumnName(string columnName) =>
+            columnName.Replace(" ", "").Replace(".", "").Replace("-", "").Replace("%", "");
+
+        private void SaveDatabase()
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog
+            {
+                Filter = "SQLite database (*.db)|*.db",
+                FileName = "Data.db"
+            };
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                SaveDataTableToDatabase(saveFileDialog.FileName);
+            }
+        }
+
+        private bool CanSaveDatabase() => _dataTable?.Rows.Count > 0;
+
+        private void SaveDataTableToDatabase(string filePath)
+        {
+            string tableName = Path.GetFileNameWithoutExtension(filePath).Replace(" ", "").Replace(".", "");
+            _dataTable.TableName = tableName;
+
+            using (var connection = new SqliteConnection($"Data Source={filePath}"))
+            {
+                connection.Open();
+                var createTableSql = DatabaseHelper.GenerateCreateTableSql(_dataTable);
+                var command = connection.CreateCommand();
+                command.CommandText = createTableSql;
+                command.ExecuteNonQuery();
+
+                foreach (DataRow row in _dataTable.Rows)
+                {
+                    DatabaseHelper.GenerateInsertSql(_dataTable, row, command);
+                    command.ExecuteNonQuery();
+                }
+            }
+            MessageBox.Show($"Database saved successfully to {filePath}.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+        protected virtual void OnPropertyChanged(string propertyName) =>
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

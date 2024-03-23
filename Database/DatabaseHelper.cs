@@ -1,82 +1,66 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+using System.Data;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 
 namespace LC_Portfolio.Database
 {
     public static class DatabaseHelper
     {
-        private static string dbFileName = "AppDatabase.db";
-        private static string DbPath => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, dbFileName);
-
-        public static void CreateDatabase()
+        // Generates SQL for creating a table based on the DataTable structure.
+        public static string GenerateCreateTableSql(DataTable dataTable)
         {
-            try
-            {
-                if (!File.Exists(DbPath))
-                {
-                    using (var connection = new SqliteConnection($"Data Source={DbPath}"))
-                    {
-                        connection.Open();
+            var sb = new StringBuilder();
+            sb.Append($"CREATE TABLE IF NOT EXISTS \"{dataTable.TableName}\" (");
 
-                        var command = connection.CreateCommand();
-                        command.CommandText =
-                        @"
-                        CREATE TABLE IF NOT EXISTS Users (
-                            ID INTEGER PRIMARY KEY AUTOINCREMENT,
-                            FIRST_NAME TEXT NOT NULL,
-                            LAST_NAME TEXT NOT NULL,
-                            E_MAIL TEXT NOT NULL UNIQUE,
-                            AGE INTEGER NOT NULL,
-                            GENDER TEXT NOT NULL
-                        );
-                    ";
-                        command.ExecuteNonQuery();
-                    }
-                }
-            }
-            catch (Exception ex)
+            foreach (DataColumn column in dataTable.Columns)
             {
-                Console.WriteLine($"An error occurred while creating the database: {ex.Message}");
-                // Handle any errors appropriately (e.g., logging, user feedback)
+                sb.Append($"\"{column.ColumnName}\" TEXT,"); // Use double quotes for column names
             }
+
+            if (dataTable.Columns.Count > 0)
+            {
+                sb.Length--; // Correctly remove the last comma if columns exist
+            }
+            sb.Append(");");
+            return sb.ToString();
         }
-        public static List<User> GetUsers()
+        // Generates SQL for inserting a row into the table based on the DataRow content.
+        public static void GenerateInsertSql(DataTable dataTable, DataRow row, SqliteCommand command)
         {
-            var users = new List<User>();
+            command.Parameters.Clear(); // Clear existing parameters before adding new ones
+            // Lists to hold column names and parameter placeholders
+            var columnNames = new List<string>();
+            var paramPlaceholders = new List<string>();
 
-            using (var connection = new SqliteConnection($"Data Source={DbPath}"))
+            // Iterate through all columns in the DataTable
+            foreach (DataColumn column in dataTable.Columns)
             {
-                connection.Open();
+                // Use column name directly since it's already sanitized
+                string columnName = column.ColumnName;
+                // Create a parameter placeholder using the column name
+                string paramPlaceholder = $"@{columnName}";
 
-                var command = connection.CreateCommand();
-                command.CommandText = "SELECT ID, FIRST_NAME, LAST_NAME, E_MAIL, AGE, GENDER FROM Users";
+                // Add the column name and parameter placeholder to their respective lists
+                columnNames.Add(columnName);
+                paramPlaceholders.Add(paramPlaceholder);
 
-                using (var reader = command.ExecuteReader())
+                // Add the parameter to the command object
+                if (row[column] != null && row[column] != DBNull.Value)
                 {
-                    while (reader.Read())
-                    {
-                        users.Add(new User
-                        {
-                            Id = reader.GetInt32(0),
-                            FirstName = reader.GetString(1), // Match the property name and casing
-                            LastName = reader.GetString(2), // Match the property name and casing
-                            Email = reader.GetString(3), // Match the property name and casing
-                            Age = reader.GetString(4), // Ensure correct data type conversion if necessary
-                            Gender = reader.GetString(5)
-                        });
-
-                    }
+                    command.Parameters.AddWithValue(paramPlaceholder, row[column]);
+                }
+                else
+                {
+                    // If the value is null, use DBNull.Value to represent a null value in the database
+                    command.Parameters.AddWithValue(paramPlaceholder, DBNull.Value);
                 }
             }
-
-            return users;
+            // Join the column names and parameter placeholders into comma-separated strings
+            string columnsPart = string.Join(", ", columnNames.Select(name => $"\"{name}\"")); // Ensure column names are quoted
+            string valuesPart = string.Join(", ", paramPlaceholders);
+            // Construct the INSERT INTO command text
+            command.CommandText = $"INSERT INTO \"{dataTable.TableName}\" ({columnsPart}) VALUES ({valuesPart});";
         }
     }
-
 }
-
