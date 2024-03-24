@@ -128,7 +128,7 @@ namespace LC_Portfolio
         {
             string username = Environment.UserName;
             string greeting = GetGreetingBasedOnTimeOfDay();
-            GreetingTextBlock.Text = $"{greeting}, {username}";
+            GreetingTextBlock.Text = $"{greeting} \n {username}";
         }
 
         private string GetGreetingBasedOnTimeOfDay()

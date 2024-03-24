@@ -17,11 +17,14 @@ namespace LC_Portfolio.Database
         public ICommand ImportCsvCommand { get; }
         public ICommand SaveDatabaseCommand { get; }
         public ICommand ConnectToDatabaseCommand { get; }
+        public ICommand DeleteRowCommand { get; private set; }
 
         private DataTable _dataTable = new DataTable();
         public DataView DataView => _dataTable.DefaultView;
 
         private Visibility _dataGridVisibility = Visibility.Collapsed;
+
+        private DataRowView _selectedRow;
         public Visibility DataGridVisibility
         {
             get => _dataGridVisibility;
@@ -36,6 +39,7 @@ namespace LC_Portfolio.Database
             ImportCsvCommand = new RelayCommand(async () => await ImportCsv());
             SaveDatabaseCommand = new RelayCommand(async () => await SaveDatabase(), CanSaveDatabase);
             ConnectToDatabaseCommand = new RelayCommand(ConnectToDatabase);
+            DeleteRowCommand = new RelayCommand(DeleteSelectedRow, () => SelectedRow != null);
             _dataTable = new DataTable();
         }
 
@@ -142,7 +146,7 @@ namespace LC_Portfolio.Database
                 string dbFilePath = openFileDialog.FileName;
                 // Now you have the path to the .db file, you can establish a connection
                 // For demonstration, let's just show the path in a MessageBox
-                MessageBox.Show($"Connecting to database at: {dbFilePath}", "Database Connection", MessageBoxButton.OK, MessageBoxImage.Information);
+                //MessageBox.Show($"Connecting to database at: {dbFilePath}", "Database Connection", MessageBoxButton.OK, MessageBoxImage.Information);
 
                 // Example connection (You might want to store this connection and use it later)
                 string connectionString = $"Data Source={dbFilePath};";
@@ -153,7 +157,7 @@ namespace LC_Portfolio.Database
                         connection.Open();
                         // Perform database operations here
                         await LoadDataFromDatabase(dbFilePath);
-                        MessageBox.Show("Connected successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                        //MessageBox.Show("Connected successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                     catch (Exception ex)
                     {
@@ -199,6 +203,23 @@ namespace LC_Portfolio.Database
                 }
             }
             return tableName;
+        }
+        public DataRowView SelectedRow
+        {
+            get => _selectedRow;
+            set
+            {
+                _selectedRow = value;
+                OnPropertyChanged(nameof(SelectedRow));
+            }
+        }
+        private void DeleteSelectedRow()
+        {
+            if (_selectedRow != null)
+            {
+                _dataTable.Rows.Remove(_selectedRow.Row);
+                OnPropertyChanged(nameof(DataView)); // Refresh the DataView
+            }
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

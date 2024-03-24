@@ -43,7 +43,6 @@
                         Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                       VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                      
                                       TextElement.Foreground="{TemplateBinding Foreground}"
                                       TextElement.FontSize="{TemplateBinding FontSize}"/>
                         </Border>
@@ -56,7 +55,6 @@
             <Setter Property="Width" Value="30"/>
             <Setter Property="Background" Value="#E52B2B"/>
             <Setter Property="Foreground" Value="white"/>
-            <!--<Setter Property="Height" Value="23"/>-->
             <Setter Property="FontSize" Value="21"/>
             <!-- Add more Setters as needed -->
         </Style>
@@ -81,7 +79,6 @@
             <ColumnDefinition Width="5*"/>
             <ColumnDefinition Width="5*"/>
             <ColumnDefinition Width="5*"/>
-            <!-- Additional ColumnDefinitions omitted for brevity -->
         </Grid.ColumnDefinitions>
 
         <!-- Top Bar Grid -->
@@ -106,16 +103,16 @@
                     <!-- Settings TextBlock on the left -->
                     <Button Content="Settings" DockPanel.Dock="Left"/>
                     <!-- Weather Information in the center -->
-                    <TextBlock x:Name="WeatherInfoTextBlock" Grid.Column="1" Padding="50,0,50,0" HorizontalAlignment="Right" Text="Weather info loading..." />
+                    <TextBlock x:Name="WeatherInfoTextBlock" Grid.Column="2" Padding="50,0,50,0" HorizontalAlignment="Center" Text="Weather info loading..." />
                     <!-- Closing "X" Button -->
                     <Button Content="X" Grid.Column="2" Style="{StaticResource CloseButtonStyle}" HorizontalAlignment="Right" Click="CloseButton_Click" Margin="0"/>
                 </DockPanel>
             </DockPanel>
         </Grid>
-        
+        <TextBlock x:Name="GreetingTextBlock" Grid.Row="1" VerticalAlignment="Top" FontSize="20" HorizontalAlignment="Center" Margin="20"/>
         <!-- Using a StackPanel for the menu buttons with the RoundedButton style -->
         <StackPanel Grid.Row="1" Grid.Column="0" VerticalAlignment="Center">
-            <TextBlock x:Name="GreetingTextBlock" FontSize="20" Margin="10"/>
+            <!--<TextBlock x:Name="GreetingTextBlock" Grid.Row="1" VerticalAlignment="Top" FontSize="20" HorizontalAlignment="Center"/>-->
             <Button Content="Database CRUD" Style="{StaticResource RoundedButton}" Click="Menu1_Click"/>
             <Button Content="Menu 2" Style="{StaticResource RoundedButton}" Click="Menu2_Click"/>
             <Button Content="Menu 3" Style="{StaticResource RoundedButton}"/>

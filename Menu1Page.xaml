@@ -81,33 +81,24 @@
                         <ColumnDefinition Width="110" MinWidth="50"/>
                         <ColumnDefinition Width="Auto" MinWidth="50"/>
                         <ColumnDefinition Width="Auto" MinWidth="50"/>
-                        <ColumnDefinition Width="Auto" MinWidth="50"/>
-                        <ColumnDefinition Width="Auto" MinWidth="50"/>
-                        <ColumnDefinition Width="Auto" MinWidth="50"/>
-                        <ColumnDefinition Width="Auto" MinWidth="50"/>
-                        <ColumnDefinition Width="Auto" MinWidth="50"/>
-                        <ColumnDefinition Width="Auto" MinWidth="50"/>
-                        <ColumnDefinition Width="Auto" MinWidth="50"/>
-                        <ColumnDefinition Width="Auto" MinWidth="50"/>
-                        <ColumnDefinition Width="Auto" MinWidth="50"/>
-                        <ColumnDefinition Width="Auto" MinWidth="50"/>
-                        <ColumnDefinition Width="Auto" MinWidth="50"/>
-                        <ColumnDefinition Width="Auto" MinWidth="50"/>
+                        <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Image Source="database iconpng.png" Margin="10,-15" Height="60" Width="60" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Left"/>
-                    <TextBlock Text="Welcome! Let´s try some CreateReadUpdateDelete operations using SQlite." Grid.Column="1" Grid.Row="0" Margin="-20" Grid.ColumnSpan="14" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <TextBlock Text="Welcome! Let´s try some CreateReadUpdateDelete operations using SQlite." Grid.Column="1" Grid.Row="0" Margin="-20" Grid.ColumnSpan="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     <TextBlock Text="Open file dialogue window and choose a .csv file to see its content." TextWrapping="Wrap" Grid.Row="2" Margin="0,-15"/>
                     <TextBlock Text="Open file dialogue window and choose a .db file to see its content." TextWrapping="Wrap" Grid.Row="4" Margin="0,-15"/>
                     <TextBlock Text="Save as .db and if you have added any records those will be saved aswell." TextWrapping="Wrap" Grid.Row="6" Margin="0,-15"/>
-                    <TextBlock Text="Mark a row in the data table and click the button to delete it." TextWrapping="Wrap" Grid.Row="14" Margin="0,-15"/>
+                    <TextBlock Text="Mark a row in the data table and click the button to delete it." TextWrapping="Wrap" Grid.Row="8" Margin="0,-15"/>
+                    <TextBlock Text="In this demo we use unencrypted data as a PoC, encryption needs to take several extra variabels into account, such as;" Grid.ColumnSpan="15" Grid.Row="12" Margin="0" HorizontalAlignment="Center"/>
+                    <TextBlock Text="- Performance, potential overhead, host machine, maintenance, compatibility, backup/recover etc." Grid.ColumnSpan="15" Grid.Row="13" Margin="0,-15" HorizontalAlignment="Center" VerticalAlignment="Top"/>
+                    
                     <!-- Populate other cells as needed -->
                     <Button Grid.Row="1" Style="{StaticResource RoundedButton}" Content="Load a .csv" Command="{Binding ImportCsvCommand}" Margin="0,5,0,0" Padding="3,3,3,3"/>
                     <Button Grid.Row="3" Style="{StaticResource RoundedButton}" Content="Connect to a .db" Margin="0,5,0,0" Padding="3,3,3,3" Command="{Binding ConnectToDatabaseCommand}"/>
                     <Button Grid.Row="5" Style="{StaticResource RoundedButton}" Content="Save Database" Command="{Binding SaveDatabaseCommand}"  Margin="0,5,0,0" Padding="3,3,3,3" />
-                    <Button Grid.Row="7" Style="{StaticResource RoundedButton}" Content="Test Connection" Margin="0,5,0,0" Padding="3,3,3,3"/>
-                    <Button Grid.Row="13" Style="{StaticResource RoundedButton}" Content="Delete record" Margin="0,5,0,0" Padding="3,3,3,3"/>
+                    <Button Grid.Row="7" Style="{StaticResource RoundedButton}" Content="Delete record" Command="{Binding DeleteRowCommand}" Margin="0,5,0,0" Padding="3,3,3,3"/>
                     <!-- Other UI elements -->
-                    <DataGrid Grid.Column="2" Grid.Row="1" Grid.RowSpan="10" ItemsSource="{Binding DataView}" AutoGenerateColumns="True" Margin="5" Visibility="{Binding DataGridVisibility}"/>
+                    <DataGrid Grid.Column="3" Grid.Row="1" Grid.RowSpan="10" ItemsSource="{Binding DataView}" SelectedItem="{Binding SelectedRow, Mode=TwoWay}" AutoGenerateColumns="True" Margin="5" Visibility="{Binding DataGridVisibility}"/>
                 </Grid>
             </DockPanel>
         </Border>
