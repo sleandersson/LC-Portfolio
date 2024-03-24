@@ -12,11 +12,12 @@
     <Window.Background>
          <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
             <GradientStop Color="#FFF0F0F0" Offset="0"/>
-            <GradientStop Color="#FFB0B0B0" Offset="1"/>
+            <GradientStop Color="#ecf0f1" Offset="1"/>
         </LinearGradientBrush>
     </Window.Background>
+    
     <Window.Resources>
-        <!-- Button style with rounded corners -->
+        <!-- Button style with rounded corners and hover effect to show icon -->
         <Style x:Key="RoundedButton" TargetType="Button">
             <Setter Property="Background" Value="#79A9B1"/>
             <Setter Property="Foreground" Value="White"/>
@@ -36,16 +37,77 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="10"
-                        Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                      TextElement.Foreground="{TemplateBinding Foreground}"
-                                      TextElement.FontSize="{TemplateBinding FontSize}"/>
+                        <Border Background="{TemplateBinding Background}" 
+                        BorderBrush="{TemplateBinding BorderBrush}" 
+                        BorderThickness="{TemplateBinding BorderThickness}" 
+                        CornerRadius="10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Image x:Name="MyIcon" 
+                               Source="images/arrow.png" 
+                               Opacity="0" 
+                               Stretch="Uniform" 
+                               Width="0" 
+                               Height="64" 
+                               Grid.Column="0"/>
+                                <ContentPresenter x:Name="MyContentPresenter" 
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}" 
+                                          TextElement.Foreground="{TemplateBinding Foreground}" 
+                                          TextElement.FontSize="{TemplateBinding FontSize}" 
+                                          Grid.Column="1" 
+                                          RenderTransformOrigin="0.5,0.5">
+                                    <ContentPresenter.RenderTransform>
+                                        <TranslateTransform X="0"/>
+                                    </ContentPresenter.RenderTransform>
+                                </ContentPresenter>
+                            </Grid>
                         </Border>
+                        <ControlTemplate.Triggers>
+                            <EventTrigger RoutedEvent="MouseEnter">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <!-- Animate icon width and opacity -->
+                                        <DoubleAnimation Storyboard.TargetName="MyIcon" 
+                                                 Storyboard.TargetProperty="Width" 
+                                                 To="24" 
+                                                 Duration="0:0:0.3"/>
+                                        <DoubleAnimation Storyboard.TargetName="MyIcon" 
+                                                 Storyboard.TargetProperty="Opacity" 
+                                                 To="1" 
+                                                 Duration="0:0:0.3"/>
+                                        <!-- Move content to the left -->
+                                        <DoubleAnimation Storyboard.TargetName="MyContentPresenter" 
+                                                 Storyboard.TargetProperty="(RenderTransform).(TranslateTransform.X)" 
+                                                 To="-20" 
+                                                 Duration="0:0:0.3"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                            <EventTrigger RoutedEvent="MouseLeave">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <!-- Animate icon width and opacity back -->
+                                        <DoubleAnimation Storyboard.TargetName="MyIcon" 
+                                                 Storyboard.TargetProperty="Width" 
+                                                 To="0" 
+                                                 Duration="0:0:0.3"/>
+                                        <DoubleAnimation Storyboard.TargetName="MyIcon" 
+                                                 Storyboard.TargetProperty="Opacity" 
+                                                 To="0" 
+                                                 Duration="0:0:0.3"/>
+                                        <!-- Move content back to original position -->
+                                        <DoubleAnimation Storyboard.TargetName="MyContentPresenter" 
+                                                 Storyboard.TargetProperty="(RenderTransform).(TranslateTransform.X)" 
+                                                 To="0" 
+                                                 Duration="0:0:0.3"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
@@ -58,7 +120,6 @@
             <Setter Property="FontSize" Value="21"/>
             <!-- Add more Setters as needed -->
         </Style>
-
     </Window.Resources>
 
     <Grid>
@@ -90,9 +151,9 @@
                 <ColumnDefinition Width="1*"/>
             </Grid.ColumnDefinitions>
             <!-- Custom Top Bar with Closing "X" Button -->
-            <DockPanel Grid.Row="0" Grid.ColumnSpan="3" Background="#EEE">
-                <DockPanel Grid.Row="0" Grid.ColumnSpan="2" Background="#EEE">
-                    <Button DockPanel.Dock="Left" Margin="15,0,30,0">
+            <DockPanel Grid.Row="0" Grid.ColumnSpan="3" Background="#2c3e50">
+                <DockPanel Grid.Row="0" Grid.ColumnSpan="2" Background="#2c3e50">
+                    <Button DockPanel.Dock="Left" Margin="15,0,30,0" Background="#2c3e50" BorderThickness="0">
                         <Button.Content>
                             <Path Data="M10,20 L10,14 L14,14 L14,20 M5,20 V10.5 L12,4 L19,10.5 V20 H5 Z"
                   Fill="Black"
@@ -101,9 +162,9 @@
                         </Button.Content>
                     </Button>
                     <!-- Settings TextBlock on the left -->
-                    <Button Content="Settings" DockPanel.Dock="Left"/>
+                    <Button Content="Settings" DockPanel.Dock="Left" Background="#2c3e50" BorderThickness="0"/>
                     <!-- Weather Information in the center -->
-                    <TextBlock x:Name="WeatherInfoTextBlock" Grid.Column="2" Padding="50,0,50,0" HorizontalAlignment="Center" Text="Weather info loading..." />
+                    <TextBlock x:Name="WeatherInfoTextBlock" Grid.Column="2" Padding="50,0,50,0" HorizontalAlignment="Center" Text="Weather info loading..." Foreground="White"/>
                     <!-- Closing "X" Button -->
                     <Button Content="X" Grid.Column="2" Style="{StaticResource CloseButtonStyle}" HorizontalAlignment="Right" Click="CloseButton_Click" Margin="0"/>
                 </DockPanel>
@@ -131,10 +192,10 @@
         </Border>
 
         <!-- Status Bar -->
-        <StatusBar Grid.Row="2" Grid.ColumnSpan="2">
+        <StatusBar Grid.Row="2" Grid.ColumnSpan="15">
             <!-- Status items can be added here -->
-            <StatusBarItem Background="#FFB0B0B0">
-                <TextBlock x:Name="IpInfoTextBlock" Background="#FFB0B0B0" Text="IP info loading..." />
+            <StatusBarItem Background="#2c3e50">
+                <TextBlock x:Name="IpInfoTextBlock" Background="#2c3e50" Text="IP info loading..." Foreground="White"/>
             </StatusBarItem>
             <!-- Additional status information can be added as needed -->
         </StatusBar>

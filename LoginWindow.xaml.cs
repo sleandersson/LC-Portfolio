@@ -19,7 +19,6 @@ namespace LC_Portfolio
             // Temporary check against a hardcoded username and password
             if (username == "user" && password == "")
             {
-                // MessageBox.Show("Login successful.");
 
                 // Open the main window and close the login window
                 var mainWindow = new MainWindow();
@@ -43,20 +42,20 @@ namespace LC_Portfolio
             }
         
 
-        /* Commented out: Active Directory authentication structure
-        if (AuthenticateUser(username, password))
-        {
-            // Authentication successful
-            MessageBox.Show("Login successful.");
-            // Proceed to open the main application window or perform other actions
+            /* Commented out: Active Directory authentication structure
+            if (AuthenticateUser(username, password))
+            {
+                // Authentication successful
+                MessageBox.Show("Login successful.");
+                // Proceed to open the main application window or perform other actions
+            }
+            else
+            {
+                // Authentication failed
+                MessageBox.Show("Login failed. Please check your username and password.");
+            }
+            */
         }
-        else
-        {
-            // Authentication failed
-            MessageBox.Show("Login failed. Please check your username and password.");
-        }
-        */
-    }
 
         /*
         private bool AuthenticateUser(string username, string password)
@@ -73,7 +72,7 @@ namespace LC_Portfolio
                 MessageBox.Show($"Error during authentication: {ex.Message}");
                 return false;
             }
-        }
-        */
+        }*/
+
     }
 }

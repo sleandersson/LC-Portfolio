@@ -83,7 +83,7 @@
                         <ColumnDefinition Width="Auto" MinWidth="50"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <Image Source="database iconpng.png" Margin="10,-15" Height="60" Width="60" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                    <Image Source="images/database iconpng.png" Margin="10,-15" Height="60" Width="60" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Left"/>
                     <TextBlock Text="Welcome! Let´s try some CreateReadUpdateDelete operations using SQlite." Grid.Column="1" Grid.Row="0" Margin="-20" Grid.ColumnSpan="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     <TextBlock Text="Open file dialogue window and choose a .csv file to see its content." TextWrapping="Wrap" Grid.Row="2" Margin="0,-15"/>
                     <TextBlock Text="Open file dialogue window and choose a .db file to see its content." TextWrapping="Wrap" Grid.Row="4" Margin="0,-15"/>
