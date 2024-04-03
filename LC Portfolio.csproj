@@ -12,6 +12,7 @@
   <ItemGroup>
     <None Remove="arrow.png" />
     <None Remove="database iconpng.png" />
+    <None Remove="Images\1614776.jpg" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Images\1614776.jpg" />
     <Resource Include="Images\arrow.png" />
     <Resource Include="Images\database iconpng.png" />
   </ItemGroup>

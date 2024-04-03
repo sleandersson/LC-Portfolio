@@ -127,8 +127,10 @@ namespace LC_Portfolio
         private void SetGreetingMessage()
         {
             string username = Environment.UserName;
+            string formattedUsername = char.ToUpper(username[0]) + username.Substring(1);
             string greeting = GetGreetingBasedOnTimeOfDay();
-            GreetingTextBlock.Text = $"{greeting} \n {username}";
+            GreetingTextBlock.Text = $"{greeting}";
+            UserNameTextBlock.Text = $"{formattedUsername}";
         }
 
         private string GetGreetingBasedOnTimeOfDay()

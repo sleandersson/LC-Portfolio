@@ -101,34 +101,34 @@ namespace LC_Portfolio.Database
             SaveFileDialog saveFileDialog = new SaveFileDialog
             {
                 Filter = "SQLite database (*.db)|*.db",
-                FileName = "Data.db"
+                FileName = "LocalDatabase.db"
             };
 
             if (saveFileDialog.ShowDialog() == true)
             {
-                SaveDataTableToDatabase(saveFileDialog.FileName);
+                await SaveDataTableToDatabase(saveFileDialog.FileName);
             }
         }
 
         private bool CanSaveDatabase() => _dataTable != null && _dataTable.Rows.Count > 0;
 
-        private void SaveDataTableToDatabase(string filePath)
+        private async Task SaveDataTableToDatabase(string filePath)
         {
             string tableName = Path.GetFileNameWithoutExtension(filePath).Replace(" ", "").Replace(".", "");
             _dataTable.TableName = tableName;
 
             using (var connection = new SqliteConnection($"Data Source={filePath}"))
             {
-                connection.Open();
+                await connection.OpenAsync();
                 var createTableSql = DatabaseHelper.GenerateCreateTableSql(_dataTable);
                 var command = connection.CreateCommand();
                 command.CommandText = createTableSql;
-                command.ExecuteNonQuery();
+                await command.ExecuteNonQueryAsync();
 
                 foreach (DataRow row in _dataTable.Rows)
                 {
                     DatabaseHelper.GenerateInsertSql(_dataTable, row, command);
-                    command.ExecuteNonQuery();
+                    await command.ExecuteNonQueryAsync();
                 }
             }
             MessageBox.Show($"Database saved successfully to {filePath}.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
