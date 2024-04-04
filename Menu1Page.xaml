@@ -92,6 +92,7 @@
                 <Button Grid.Row="3" Style="{StaticResource RoundedButton}" Content="Connect to a .db" Margin="0,5,0,0" Padding="3,3,3,3" Command="{Binding ConnectToDatabaseCommand}"/>
                 <Button Grid.Row="5" Style="{StaticResource RoundedButton}" Content="Save Database" Command="{Binding SaveDatabaseCommand}"  Margin="0,5,0,0" Padding="3,3,3,3" />
                 <Button Grid.Row="7" Style="{StaticResource RoundedButton}" Content="Delete record" Command="{Binding DeleteRowCommand}" Margin="0,5,0,0" Padding="3,3,3,3"/>
+                <Button Grid.Row="9" Style="{StaticResource RoundedButton}" Content="Update record" Command="{Binding UpdateDatabaseCommand}" Margin="0,5,0,0" Padding="3,3,3,3"/>
                 <!-- Other UI elements -->
                 <DataGrid Grid.Column="3" Grid.Row="1" Grid.RowSpan="10" ItemsSource="{Binding DataView}" SelectedItem="{Binding SelectedRow, Mode=TwoWay}" AutoGenerateColumns="True" Margin="5" Visibility="{Binding DataGridVisibility}"/>
             </Grid>
