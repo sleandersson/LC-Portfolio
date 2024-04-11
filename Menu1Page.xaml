@@ -53,7 +53,7 @@
             <!-- Content area -->
             <Grid >
                 <Grid.Background>
-                    <ImageBrush ImageSource="Images/1614776.jpg" Stretch="UniformToFill"/>
+                    <ImageBrush ImageSource="Images/backwpf01.png" Stretch="UniformToFill"/>
                 </Grid.Background>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" MinHeight="15"/>

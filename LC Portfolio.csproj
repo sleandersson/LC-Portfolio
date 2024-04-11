@@ -13,6 +13,9 @@
     <None Remove="arrow.png" />
     <None Remove="database iconpng.png" />
     <None Remove="Images\1614776.jpg" />
+    <None Remove="Images\backgroundwpf02.png" />
+    <None Remove="Images\backwpf01.png" />
+    <None Remove="Images\button01.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,8 +28,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Images\1614776.jpg" />
     <Resource Include="Images\arrow.png" />
+    <Resource Include="Images\backwpf01.png" />
+    <Resource Include="Images\backgroundwpf02.png" />
+    <Resource Include="Images\button01.png" />
     <Resource Include="Images\database iconpng.png" />
   </ItemGroup>
 

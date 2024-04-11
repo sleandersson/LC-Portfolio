@@ -10,13 +10,18 @@
         WindowState="Maximized"
         ResizeMode="CanResize">
     <Window.Background>
-        <ImageBrush ImageSource="Images/1614776.jpg" Stretch="UniformToFill"/>
+        <ImageBrush ImageSource="Images/backgroundwpf02.png" Stretch="UniformToFill"/>
     </Window.Background>
 
     <Window.Resources>
         <!-- Button style with rounded corners and hover effect to show icon -->
         <Style x:Key="RoundedButton" TargetType="Button">
-            <Setter Property="Background" Value="#79A9B1"/>
+            <!--<Setter Property="Background">
+                <Setter.Value>
+                    <ImageBrush ImageSource="Images/backwpf01.png"/>
+                </Setter.Value>
+            </Setter>-->
+            <Setter Property="Background" Value="#75ACAF"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderBrush" Value="#75ACAF"/>
             <Setter Property="BorderThickness" Value="1"/>
