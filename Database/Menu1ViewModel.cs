@@ -21,6 +21,7 @@ namespace LC_Portfolio.Database
         public ICommand DeleteRowCommand { get; private set; }
         public ICommand UpdateDatabaseCommand { get; private set; }
 
+        private string _currentFilePath;
         private DataTable _dataTable = new DataTable();
         public DataView DataView => _dataTable.DefaultView;
 
@@ -55,70 +56,72 @@ namespace LC_Portfolio.Database
 
             if (openFileDialog.ShowDialog() == true)
             {
+                _currentFilePath = openFileDialog.FileName;
                 await LoadCsvIntoDataTable(openFileDialog.FileName);
-                if (DataGridVisibility != Visibility.Visible)
-                {
-                    DataGridVisibility = Visibility.Visible;
-                }
+                DataGridVisibility = Visibility.Visible;
             }
         }
+
         private async Task LoadCsvIntoDataTable(string csvFilePath)
         {
-            var newDataTable = await Task.Run(() =>
-            {
-                var tempDataTable = new DataTable();
-                DataColumn pkColumn = CreatePrimaryKeyColumn();
-                tempDataTable.Columns.Add(pkColumn);
-
+            await Task.Run(() => {
                 using (var parser = new TextFieldParser(csvFilePath))
                 {
                     parser.TextFieldType = FieldType.Delimited;
                     parser.SetDelimiters(",");
                     bool isFirstRow = true;
-
                     while (!parser.EndOfData)
                     {
-                        var fields = parser.ReadFields();
+                        string[] fields = parser.ReadFields();
                         if (isFirstRow)
                         {
-                            AddColumnsToDataTable(fields, tempDataTable);
+                            SetupDataTableColumns(fields);
                             isFirstRow = false;
                         }
                         else
                         {
-                            AddRowToDataTable(fields, tempDataTable);
+                            AddRowToDataTable(fields);
                         }
                     }
                 }
-                return tempDataTable;
             });
-
-            _dataTable = newDataTable;
             OnPropertyChanged(nameof(DataView));
         }
-        private static DataColumn CreatePrimaryKeyColumn()
+
+        private void SetupDataTableColumns(string[] headers)
         {
-            return new DataColumn("PK", typeof(int)) { AutoIncrement = true, AutoIncrementSeed = 1, AutoIncrementStep = 1, ReadOnly = true, Unique = true };
-        }
-        private static void AddColumnsToDataTable(string[] fields, DataTable dataTable)
-        {
-            foreach (var header in fields)
-            {
-                var sanitizedHeader = SanitizeColumnName(header);
-                dataTable.Columns.Add(sanitizedHeader);
+            if (_dataTable.Columns.Count == 0)
+            { // Only add columns if not already added
+                DataColumn pkColumn = new DataColumn("PK", typeof(int))
+                {
+                    AutoIncrement = true,
+                    AutoIncrementSeed = 1,
+                    AutoIncrementStep = 1,
+                    ReadOnly = true,
+                    Unique = true
+                };
+                _dataTable.Columns.Add(pkColumn);
+                foreach (string header in headers)
+                {
+                    _dataTable.Columns.Add(SanitizeColumnName(header), typeof(string));
+                }
             }
         }
-        private static void AddRowToDataTable(string[] fields, DataTable dataTable)
+
+        private void AddRowToDataTable(string[] fields)
         {
-            var newRow = dataTable.NewRow();
+            var newRow = _dataTable.NewRow();
             for (int i = 0; i < fields.Length; i++)
             {
-                newRow[i + 1] = fields[i]; // +1 to account for the PK column
+                newRow[i + 1] = fields[i]; // i + 1 because the first column is the PK
             }
-            dataTable.Rows.Add(newRow);
+            _dataTable.Rows.Add(newRow);
         }
-        private static string SanitizeColumnName(string columnName) =>
-            columnName.Replace(" ", "").Replace(".", "").Replace("-", "").Replace("%", "");
+
+        private string SanitizeColumnName(string columnName)
+        {
+            return columnName.Replace(" ", "_").Replace(".", "_").Replace("-", "_").Replace("%", "_");
+        }
 
         private async Task SaveDatabase()
         {
@@ -165,82 +168,44 @@ namespace LC_Portfolio.Database
 
             if (openFileDialog.ShowDialog() == true)
             {
-                string dbFilePath = openFileDialog.FileName;
-
-                // Example connection (You might want to store this connection and use it later)
-                string connectionString = $"Data Source={dbFilePath};";
-                using (var connection = new SqliteConnection(connectionString))
-                {
-                    try
-                    {
-                        connection.Open();
-                        // Perform database operations here
-                        await LoadDataFromDatabase(dbFilePath);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Failed to connect: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                }
+                _currentFilePath = openFileDialog.FileName;
+                await LoadDataFromDatabase(_currentFilePath);
+                DataGridVisibility = Visibility.Visible;
             }
         }
+
         private async Task LoadDataFromDatabase(string dbFilePath)
         {
-            DataTable dbDataTable = new DataTable();
-
             using (var connection = new SqliteConnection($"Data Source={dbFilePath}"))
             {
                 await connection.OpenAsync();
-
-                // Dynamically get the table name if necessary
                 string tableName = await GetFirstTableNameAsync(connection);
 
-                // First, load the schema into the DataTable
-                string schemaSql = $"SELECT * FROM {tableName} LIMIT 0;"; // 0 to fetch no rows, just schema
-                using (var schemaCommand = new SqliteCommand(schemaSql, connection))
-                using (var reader = await schemaCommand.ExecuteReaderAsync())
+                string sql = $"SELECT * FROM {tableName};";
+                using (var command = new SqliteCommand(sql, connection))
+                using (var reader = await command.ExecuteReaderAsync())
                 {
-                    dbDataTable.Load(reader);
-                }
-
-                // Then, load the actual data
-                string dataSql = $"SELECT * FROM {tableName};";
-                using (var dataCommand = new SqliteCommand(dataSql, connection))
-                using (var reader = await dataCommand.ExecuteReaderAsync())
-                {
-                    // Here, we can't use dbDataTable.Load(reader) directly since it would overwrite the existing schema.
-                    // Instead, manually load rows.
-                    while (await reader.ReadAsync())
-                    {
-                        var row = dbDataTable.NewRow();
-                        for (int i = 0; i < reader.FieldCount; i++)
-                        {
-                            row[i] = reader.IsDBNull(i) ? DBNull.Value : reader.GetValue(i);
-                        }
-                        dbDataTable.Rows.Add(row);
-                    }
+                    DataTable newDataTable = new DataTable();
+                    newDataTable.Load(reader);
+                    _dataTable.Merge(newDataTable);
                 }
             }
 
-            _dataTable = dbDataTable;
             OnPropertyChanged(nameof(DataView));
-            DataGridVisibility = Visibility.Visible; // Ensure DataGrid is visible to show the loaded data
         }
 
         private async Task<string> GetFirstTableNameAsync(SqliteConnection connection)
         {
-            string? tableName = null;
-            // Query to get the first table name
             string query = "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;";
             using (var command = new SqliteCommand(query, connection))
             using (var reader = await command.ExecuteReaderAsync())
             {
                 if (await reader.ReadAsync())
                 {
-                    tableName = reader.GetString(0);
+                    return reader.GetString(0);
                 }
             }
-            return tableName;
+            return null;
         }
         public DataRowView SelectedRow
         {
@@ -253,65 +218,102 @@ namespace LC_Portfolio.Database
         }
         private bool CanUpdateDatabase()
         {
-            // Example condition: check if the DataTable has changes
             return _dataTable.GetChanges() != null;
         }
-        private void ExecuteUpdateDatabase()
+        private async void ExecuteUpdateDatabase()
         {
-            // Wrap the async call in a try-catch block
-            try
+            if (!CanUpdateDatabase())
             {
-                // Call the async method without awaiting it
-                var _ = UpdateDatabaseAsync(); // Discard the returned Task
+                MessageBox.Show("No changes to update.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
             }
-            catch (Exception ex)
+
+            using (var connection = new SqliteConnection($"Data Source={_currentFilePath}"))
             {
-                // Handle exceptions that might occur during initiation
-                MessageBox.Show($"Error updating database: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                await connection.OpenAsync();
+                var transaction = connection.BeginTransaction();
+                var command = connection.CreateCommand();
+                command.Transaction = transaction;
+
+                try
+                {
+                    DataTable changes = _dataTable.GetChanges();
+                    foreach (DataRow row in changes.Rows)
+                    {
+                        if (row.RowState == DataRowState.Modified)
+                        {
+                            // Update command goes here
+                        }
+                    }
+                    transaction.Commit();
+                    _dataTable.AcceptChanges();
+                    MessageBox.Show("Database updated successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    MessageBox.Show($"Failed to update database: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
         private async Task UpdateDatabaseAsync()
         {
-            string dbFilePath = "Path to your database file"; // Adjust accordingly
+            if (string.IsNullOrEmpty(_currentFilePath))
+            {
+                MessageBox.Show("No file is currently loaded.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
 
-            using (var connection = new SqliteConnection($"Data Source={dbFilePath}"))
+            using (var connection = new SqliteConnection($"Data Source={_currentFilePath}"))
             {
                 await connection.OpenAsync();
                 using (var transaction = connection.BeginTransaction())
                 {
                     var command = connection.CreateCommand();
-                    command.Transaction = transaction; // Associate the command with the transaction
+                    command.Transaction = transaction;
 
                     try
                     {
-                        foreach (DataRow row in _dataTable.Rows)
+                        // Retrieve only modified rows
+                        var changedDataTable = _dataTable.GetChanges(DataRowState.Modified);
+                        if (changedDataTable == null)
                         {
-                            if (row.RowState == DataRowState.Modified)
+                            MessageBox.Show("No changes to update.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                            return; // Early exit if no changes are detected
+                        }
+
+                        foreach (DataRow row in changedDataTable.Rows)
+                        {
+                            string updateSql = GenerateDynamicUpdateSql(row, _dataTable.TableName);
+                            command.CommandText = updateSql;
+
+                            // Clear existing parameters
+                            command.Parameters.Clear();
+
+                            // Adding primary key parameter
+                            var primaryKeyColumn = _dataTable.Columns[0].ColumnName;
+                            command.Parameters.AddWithValue($"@primaryKey", row[primaryKeyColumn]);
+
+                            // Adding parameters for each column
+                            foreach (DataColumn column in _dataTable.Columns.Cast<DataColumn>().Skip(1))
                             {
-                                string updateSql = GenerateDynamicUpdateSql(row, _dataTable.TableName);
-                                command.CommandText = updateSql;
+                                command.Parameters.AddWithValue($"@{SanitizeColumnName(column.ColumnName)}", row[column]);
+                            }
 
-                                // Assuming a convention where the first column is the primary key
-                                var primaryKeyColumn = _dataTable.Columns[0].ColumnName;
-                                command.Parameters.AddWithValue($"@primaryKey", row[primaryKeyColumn]);
-
-                                // Adding parameters for each column
-                                foreach (DataColumn column in _dataTable.Columns.Cast<DataColumn>().Skip(1)) // Cast and then skip the primary key column
-                                {
-                                    command.Parameters.AddWithValue($"@{column.ColumnName}", row[column]);
-                                }
-
-                                await command.ExecuteNonQueryAsync();
-                                command.Parameters.Clear(); // Clear parameters after each execution
+                            int result = await command.ExecuteNonQueryAsync();
+                            if (result == 0)
+                            {
+                                throw new InvalidOperationException("No rows were updated, check your primary key and column values.");
                             }
                         }
 
-                        transaction.Commit(); // Commit the transaction after all commands execute successfully
+                        transaction.Commit(); // Commit only if all updates succeed
                         _dataTable.AcceptChanges(); // Accept changes to reset row states
+                        MessageBox.Show("Database updated successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                     catch (Exception ex)
                     {
-                        transaction.Rollback(); // Rollback the transaction in case of an error
+                        transaction.Rollback(); // Rollback in case of any error
                         MessageBox.Show($"Failed to update database: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
